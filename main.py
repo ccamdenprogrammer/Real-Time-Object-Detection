@@ -14,6 +14,11 @@ if not cap.isOpened():
     print("Error: Could not open video stream.")
     exit()
 
+cap.set(cv2.CAP_PROP_FPS, 60)
+fps = cap.get(cv2.CAP_PROP_FPS)
+print(f"FPS: {fps}")
+
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -26,14 +31,14 @@ while cap.isOpened():
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
-    img_resized = cv2.resize(img_rgb, (640, 640))
+    img_resized = cv2.resize(img_rgb, (320, 320))
 
 
     results = model(img_resized)
 
 
-    scale_w = orig_w / 640
-    scale_h = orig_h / 640
+    scale_w = orig_w / 320
+    scale_h = orig_h / 320
 
 
     for detection in results.xyxy[0]:
