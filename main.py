@@ -9,15 +9,19 @@ import os
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # Load the YOLOv5 model
-model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-
-# Initialize the video capture (0 for default webcam, 1 for external webcam)
-cap = cv2.VideoCapture(1)
-if not cap.isOpened():
-    print("Error: Could not open video stream.")
+try:
+    model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+except Exception as e:
+    print(f"Error loading YOLOv5 model: {e}")
     exit()
 
-cap.set(cv2.CAP_PROP_FPS, 60)
+# Initialize the video capture (0 for default webcam, 1 for external webcam)
+cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    print("Error: Could not open video stream. Check your camera index and connections.")
+    exit()
+
+cap.set(cv2.CAP_PROP_FPS, 60)  # This might not be supported by your webcam
 fps = cap.get(cv2.CAP_PROP_FPS)
 print(f"FPS: {fps}")
 
@@ -27,19 +31,23 @@ os.makedirs(output_folder, exist_ok=True)
 
 # Function to add metadata to image using Pillow
 def add_metadata(image_path, date_time):
-    img = Image.open(image_path)
-    meta = PngImagePlugin.PngInfo()
-    
-    # Add metadata
-    meta.add_text("DateTime", date_time)
-    
-    # Save with metadata
-    img.save(image_path, pnginfo=meta)
+    try:
+        img = Image.open(image_path)
+        meta = PngImagePlugin.PngInfo()
+
+        # Add metadata
+        meta.add_text("DateTime", date_time)
+
+        # Save with metadata
+        img.save(image_path, pnginfo=meta)
+    except Exception as e:
+        print(f"Error adding metadata: {e}")
 
 # Start video capture
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
+        print("Error: Could not read frame.")
         break
 
     # Get original frame dimensions
@@ -53,10 +61,13 @@ while cap.isOpened():
 
     # Run YOLOv5 model
     results = model(img_resized)
+    print(results.xyxy[0])  # Debugging: Print detection results
 
     # Calculate scaling factors to map back to original frame size
     scale_w = orig_w / 320
     scale_h = orig_h / 320
+
+    detected_person = False  # Flag to capture frame only once per detection loop
 
     # Iterate through detections
     for detection in results.xyxy[0]:
@@ -66,6 +77,8 @@ while cap.isOpened():
 
             # Only proceed if the detected object is a "person"
             if label == "person":
+                detected_person = True
+
                 # Scale back to the original image size
                 x1, y1, x2, y2 = x1 * scale_w, y1 * scale_h, x2 * scale_w, y2 * scale_h
 
@@ -76,16 +89,17 @@ while cap.isOpened():
                 cv2.putText(frame, f'{label} {conf:.2f}', (int(x1), int(y1) - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-                # Capture and save the frame
-                current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-                filename = f"person_{current_time}.png"  # Using PNG for metadata support
-                file_path = os.path.join(output_folder, filename)
-                
-                # Save the frame
-                cv2.imwrite(file_path, frame)
+    # Capture and save the frame only if a person is detected
+    if detected_person:
+        current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        filename = f"person_{current_time}.png"  # Using PNG for metadata support
+        file_path = os.path.join(output_folder, filename)
 
-                # Add the date and time metadata to the saved image
-                add_metadata(file_path, current_time)
+        # Save the frame
+        cv2.imwrite(file_path, frame)
+
+        # Add the date and time metadata to the saved image
+        add_metadata(file_path, current_time)
 
     # Display the frame
     cv2.imshow('Object Detection', frame)
