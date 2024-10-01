@@ -16,7 +16,7 @@ except Exception as e:
     exit()
 
 # Initialize the video capture (0 for default webcam, 1 for external webcam)
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 if not cap.isOpened():
     print("Error: Could not open video stream. Check your camera index and connections.")
     exit()
@@ -40,6 +40,8 @@ def add_metadata(image_path, date_time):
         print(f"Error adding metadata: {e}")
 
 # Start video capture
+capture_enabled = False  # Start in view-only mode
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -85,8 +87,8 @@ while cap.isOpened():
                 cv2.putText(frame, f'{label} {conf:.2f}', (int(x1), int(y1) - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    # Capture and save the frame only if a person is detected
-    if detected_person:
+    # Capture and save the frame only if a person is detected and capture mode is enabled
+    if detected_person and capture_enabled:
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f"person_{current_time}.png"  # Using PNG for metadata support
         file_path = os.path.join(output_folder, filename)
@@ -100,9 +102,16 @@ while cap.isOpened():
     # Display the frame
     cv2.imshow('Object Detection', frame)
 
-    # Press 'q' to quit
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    # Check for key presses
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
+        # Press 'q' to quit
         break
+    elif key == ord('c'):
+        # Press 'c' to toggle capture mode
+        capture_enabled = not capture_enabled
+        mode = "Capture Mode" if capture_enabled else "View-Only Mode"
+        print(f"Mode switched to: {mode}")
 
 # Release resources
 cap.release()
