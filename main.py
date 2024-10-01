@@ -21,10 +21,6 @@ if not cap.isOpened():
     print("Error: Could not open video stream. Check your camera index and connections.")
     exit()
 
-cap.set(cv2.CAP_PROP_FPS, 60)  # This might not be supported by your webcam
-fps = cap.get(cv2.CAP_PROP_FPS)
-print(f"FPS: {fps}")
-
 # Create a folder to save captured frames
 output_folder = "captured_frames"
 os.makedirs(output_folder, exist_ok=True)
