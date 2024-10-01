@@ -79,6 +79,7 @@ The program uses a confidence threshold of 0.5 for person detection. This can be
 
 Frame Rate: 
 The script sets the webcam to capture at 60 FPS using cap.set(cv2.CAP_PROP_FPS, 60). However, actual FPS may vary depending on hardware performance.
+
 Troubleshooting:
 
 Video Stream Fails to Open: 
