@@ -6,7 +6,9 @@ from datetime import datetime
 from PIL import Image, PngImagePlugin
 import os
 
+#!!!
 #THIS LINE IS NOT SECURE: ONLY FOR TESTING--REMOVES SSL VERIFICATION
+#!!!
 ssl._create_default_https_context = ssl._create_unverified_context
 
 #Loading the model, if can't be loaded, error is thrown
