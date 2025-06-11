@@ -1,0 +1,13 @@
+train: /Users/camdencrace/Desktop/rto/Real-Time-Object-Detection/train/images
+val: /Users/camdencrace/Desktop/rto/Real-Time-Object-Detection/valid/images
+test: /Users/camdencrace/Desktop/rto/Real-Time-Object-Detection/test/images
+
+nc: 4
+names: ['helmet', 'vest', 'without_helmet', 'without_vest']
+
+roboflow:
+  workspace: new-workspace-w7psa
+  project: construction-site
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/new-workspace-w7psa/construction-site/dataset/1

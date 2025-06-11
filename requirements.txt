@@ -1,0 +1,8 @@
+torch
+torchvision
+torchaudio
+opencv-python
+pillow
+numpy
+ultralytics
+inference-sdk 
